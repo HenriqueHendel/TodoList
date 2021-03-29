@@ -1,5 +1,6 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState} from 'react';
 import {SafeAreaView ,View, Text, StyleSheet, TouchableOpacity, FlatList, Modal, TextInput } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Animatable from 'react-native-animatable';
 
 import {Ionicons} from '@expo/vector-icons';
@@ -18,12 +19,27 @@ const Home: React.FC = () => {
 
   const [tasks, setTasks] = useState<TaskProps[]>([]);
 
+  useEffect(()=>{
+      (async () => {
+          const taskStorage = await AsyncStorage.getItem('@tasks');
+
+          if(taskStorage){
+              setTasks(JSON.parse(taskStorage))
+          }
+      })()
+  }, [])
+
+  useEffect(()=>{
+    (async () => {
+        await AsyncStorage.setItem('@tasks', JSON.stringify(tasks));
+    })()
+}, [tasks])
+
   function handleAddTask() {
       if(inputValue.trim() === ''){
           alert('Informe uma tarefa!');
           return
       }
-
       let newTask;
 
       if(tasks.length >= 1){
@@ -67,7 +83,7 @@ const Home: React.FC = () => {
                     <Text style={styles.modalTitle} >Nova Tarefa</Text>
                 </View>
 
-                <View style={styles.modalBody} >
+                <Animatable.View style={styles.modalBody} animation='fadeInUp' useNativeDriver >
                     <TextInput 
                         style={styles.input} 
                         placeholder='O que preciso fazer hoje ?' 
@@ -81,7 +97,7 @@ const Home: React.FC = () => {
                     <TouchableOpacity style={styles.addTaskButton} onPress={handleAddTask}>
                         <Text style={styles.addTaskText} >Cadastrar</Text>
                     </TouchableOpacity>
-                </View>
+                </Animatable.View>
             </SafeAreaView>
         </Modal>
 
